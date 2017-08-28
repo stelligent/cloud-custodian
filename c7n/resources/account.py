@@ -33,6 +33,11 @@ from c7n.resources.iam import CredentialReport
 filters = FilterRegistry('aws.account.actions')
 actions = ActionRegistry('aws.account.filters')
 
+def get_account_id_from_role_arn(role_arn):
+    if role_arn != None:
+        return role_arn.split(':')[4]
+    else:
+        return 'None'
 
 def get_account(session_factory, config):
     session = local_session(session_factory)
@@ -121,6 +126,7 @@ class CheckCloudTrail(Filter):
                 'TrailName': self.data.get('trail-name')
             }
         ]
+        resources[0]['target_account_id'] = get_account_id_from_role_arn(self.manager.session_factory.assume_role)
 
         return resources
 
@@ -162,7 +168,7 @@ class CheckIamRole(Filter):
                 'RoleName': self.data.get('role-name')
             }
         ]
-
+        resources[0]['target_account_id'] = get_account_id_from_role_arn(self.manager.session_factory.assume_role)
         return resources
 
 @filters.register('check-iam-user')
@@ -203,6 +209,7 @@ class CheckIamUser(Filter):
                 'UserName': self.data.get('user-name')
             }
         ]
+        resources[0]['target_account_id'] = get_account_id_from_role_arn(self.manager.session_factory.assume_role)
 
         return resources
 
