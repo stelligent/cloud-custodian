@@ -84,7 +84,7 @@ class AccountCredentialReport(CredentialReport):
                 results.append(r)
         return results
 
-@filters.register('check-cloud-traiil')
+@filters.register('cloud-trail-exists')
 class CheckCloudTrail(Filter):
     """Does user exist in this account
 
@@ -102,7 +102,7 @@ class CheckCloudTrail(Filter):
     """
 
     schema = type_schema(
-        'check-cloud-trail', **{
+        'cloud-trail-exists', **{
             'trail-name': {'type': 'string'}})
 
     permissions = ('iam:DescribeTrails')
