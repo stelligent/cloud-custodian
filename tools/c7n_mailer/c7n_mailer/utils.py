@@ -17,7 +17,7 @@ import json
 import os
 import yaml
 
-from io import StringIO
+from StringIO import StringIO
 from dateutil import parser
 from dateutil.tz import gettz
 
