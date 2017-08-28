@@ -84,6 +84,127 @@ class AccountCredentialReport(CredentialReport):
                 results.append(r)
         return results
 
+@filters.register('check-cloud-traiil')
+class CheckCloudTrail(Filter):
+    """Does user exist in this account
+
+    :example:
+
+        .. code-block: yaml
+
+            policies:
+              - name: account-check-cloud-trail
+                resource: account
+                region: us-east-1
+                filters:
+                  - type:check-cloud-trail
+                    trail-name: fred
+    """
+
+    schema = type_schema(
+        'check-cloud-trail', **{
+            'trail-name': {'type': 'string'}})
+
+    permissions = ('iam:DescribeTrails')
+
+    def process(self, resources, event=None):
+        client = local_session(
+            self.manager.session_factory).client('cloudtrail')
+
+        trails = client.describe_trails(trailNameList=[self.data.get('trail-name')])['trailList']
+
+        if trails:
+            return []
+
+        resources[0]['c7n:cloud_trails'] = [
+            {
+                'TrailName': self.data.get('trail-name')
+            }
+        ]
+
+        return resources
+
+@filters.register('check-iam-role')
+class CheckIamRole(Filter):
+    """Does user exist in this account
+
+    :example:
+
+        .. code-block: yaml
+
+            policies:
+              - name: account-check-iam-role
+                resource: account
+                region: us-east-1
+                filters:
+                  - type:check-iam-role
+                    role-name: fred
+    """
+
+    schema = type_schema(
+        'check-iam-role', **{
+            'role-name': {'type': 'string'}})
+
+    permissions = ('iam:ListRoles')
+
+    def process(self, resources, event=None):
+        client = local_session(
+            self.manager.session_factory).client('iam')
+
+        roles = client.list_roles()['Roles']
+        found_roles = [role for role in roles
+                       if role['RoleName'] == self.data.get('role-name')]
+        if found_roles:
+            return []
+
+        resources[0]['c7n:iam_roles'] = [
+            {
+                'RoleName': self.data.get('role-name')
+            }
+        ]
+
+        return resources
+
+@filters.register('check-iam-user')
+class CheckIamUser(Filter):
+    """Does user exist in this account
+
+    :example:
+
+        .. code-block: yaml
+
+            policies:
+              - name: account-check-iam-user
+                resource: account
+                region: us-east-1
+                filters:
+                  - type:check-iam-user
+                    user-name: fred
+    """
+
+    schema = type_schema(
+        'check-iam-user', **{
+            'user-name': {'type': 'string'}})
+
+    permissions = ('iam:ListUsers')
+
+    def process(self, resources, event=None):
+        client = local_session(
+            self.manager.session_factory).client('iam')
+
+        users = client.list_users()['Users']
+        found_users = [user for user in users
+                       if user['UserName'] == self.data.get('user-name')]
+        if found_users:
+            return []
+
+        resources[0]['c7n:iam_users'] = [
+            {
+                'UserName': self.data.get('user-name')
+            }
+        ]
+
+        return resources
 
 @filters.register('check-cloudtrail')
 class CloudTrailEnabled(Filter):
