@@ -116,9 +116,11 @@ class CheckCloudTrail(Filter):
         client = local_session(
             self.manager.session_factory).client('cloudtrail')
 
-        trails = client.describe_trails(trailNameList=[self.data.get('trail-name')])['trailList']
+        trails = client.describe_trails()['trailList']
 
-        if trails:
+        found_trails = [trail for trail in trails
+                        if trail['Name'] == self.data.get('trail-name')]
+        if found_trails:
             return []
 
         resources[0]['c7n:cloud_trails'] = [
