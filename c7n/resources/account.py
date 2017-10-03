@@ -16,6 +16,8 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import json
+import logging
+
 from botocore.exceptions import ClientError
 from datetime import datetime, timedelta
 
@@ -29,6 +31,7 @@ from c7n.utils import local_session, type_schema
 
 from c7n.resources.iam import CredentialReport
 
+log = logging.getLogger('custodian.account')
 
 filters = FilterRegistry('aws.account.actions')
 actions = ActionRegistry('aws.account.filters')
@@ -117,9 +120,11 @@ class CheckCloudTrail(Filter):
             self.manager.session_factory).client('cloudtrail')
 
         trails = client.describe_trails()['trailList']
-
+        log.info("Full trailList: %s", trails)
         found_trails = [trail for trail in trails
                         if trail['Name'] == self.data.get('trail-name')]
+        log.info("Found trailList for %s: %s", self.data.get('trail-name'), found_trails)
+
         if found_trails:
             return []
 
